@@ -4,12 +4,14 @@
 package login;
 
 import java.awt.EventQueue;
+import java.awt.Image;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -21,7 +23,7 @@ import java.awt.event.KeyEvent;
 /**
  * @author federicoruiz 10 may 2023 13:42:20
  */
-public class VistaLogin extends JFrame {
+public class VistaLogin extends JFrame implements Vistas{
 
 	private JPanel contentPane;
 	private Controlador miControlador;
@@ -40,6 +42,8 @@ public class VistaLogin extends JFrame {
 	private JButton btnRegistro;
 	private JLabel lblUsuarioCreado;
 	private JLabel lblContraseñaModificada;
+	private JButton btnConfig;
+	private JLabel lblOk;
 
 	/**
 	 * Create the frame.
@@ -77,6 +81,7 @@ public class VistaLogin extends JFrame {
 				txtContraseña.setText(null);
 				lblUsuarioCreado.setVisible(false);
 				lblContraseñaModificada.setVisible(false);
+				lblOk.setVisible(false);
 			}
 		});
 		btnLogin.setEnabled(false);
@@ -101,6 +106,7 @@ public class VistaLogin extends JFrame {
 				txtContraseña.setText(null);
 				lblUsuarioCreado.setVisible(false);
 				lblContraseñaModificada.setVisible(false);
+				lblOk.setVisible(false);
 			}
 		});
 		btnRegistro.setBounds(219, 222, 117, 29);
@@ -117,17 +123,43 @@ public class VistaLogin extends JFrame {
 		lblContraseñaModificada.setForeground(Color.RED);
 		lblContraseñaModificada.setBounds(73, 155, 158, 16);
 		getContentPane().add(lblContraseñaModificada);
+		
+		
+		ImageIcon icono = new ImageIcon(VistaLogin.class.getResource("/img/rueda.png"));
+		Image imagenOriginal = icono.getImage();
+	    Image imagenRedimensionada = imagenOriginal.getScaledInstance(50, 50, Image.SCALE_SMOOTH);
+	    ImageIcon iconoRedimensionado = new ImageIcon(imagenRedimensionada);
+		btnConfig = new JButton(iconoRedimensionado);
+		btnConfig.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				miControlador.mostrarConfiguracion();
+				miControlador.rellenarCampos();
+			}
+		});
+		btnConfig.setBounds(58, 180, 94, 56);
+		btnConfig.setBorderPainted(false);
+	    btnConfig.setFocusPainted(false);
+	    btnConfig.setContentAreaFilled(false);
+		getContentPane().add(btnConfig);
+		
+		lblOk = new JLabel("Operacion realizada con exito");
+		lblOk.setVisible(false);
+		lblOk.setBounds(18, 248, 199, 16);
+		getContentPane().add(lblOk);
+		 // Ruta de la imagen
+       
 	}
 
+	@Override
 	public void setControlador(Controlador miControlador) {
 		this.miControlador = miControlador;
+		
 	}
 
-	/**
-	 * @param miModelo the miModelo to set
-	 */
+	@Override
 	public void setModelo(Modelo miModelo) {
 		this.miModelo = miModelo;
+		
 	}
 
 	/**
@@ -152,7 +184,7 @@ public class VistaLogin extends JFrame {
 			btnLogin.setEnabled(false);
 		}
 	}
-	
+
 	public void mostrarVista() {
 		miControlador.mostrarLogin();
 	}
@@ -164,4 +196,21 @@ public class VistaLogin extends JFrame {
 	public void mostrarEtiquetaContraseña() {
 		lblContraseñaModificada.setVisible(true);
 	}
+
+	/**
+	 * @return the lblOk
+	 */
+	public JLabel getLblOk() {
+		return lblOk;
+	}
+
+	/**
+	 * 
+	 */
+	public void mostrarLogin() {
+		miControlador.mostrarLogin();	
+	}
+	
+	
+
 }

@@ -1,5 +1,6 @@
 package login;
 
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPasswordField;
 import javax.swing.JTable;
@@ -17,9 +18,12 @@ public class Controlador {
 	private VistaUsuarios usuarios;
 	private VistaError error;
 	private VistaPerfil perfil;
+	private VistaConfiguracion configuracion;
+	private VistaNoConnection noConnection;
 	final String admin = "admin";
 	final String usuario = "usuario";
 	final int cantidadErrores = 3;
+	boolean cambioAdmin = false;
 
 	/**
 	 * @param miModelo the miModelo to set
@@ -57,19 +61,21 @@ public class Controlador {
 	}
 
 	/**
-	 * Metodo que va a almacenar en una varible el usuario y en otra la contraseña , llamoa al metodo clickLogin de mi modelo
-	 * que va verificar si la entrada es correcta y me va devovler una respuesta en RESULTADO (return) 
-	 * Luego con la variable resultado veo quien se esta logeando y por donde tiene que ir 
+	 * Metodo que va a almacenar en una varible el usuario y en otra la contraseña ,
+	 * llamoa al metodo clickLogin de mi modelo que va verificar si la entrada es
+	 * correcta y me va devovler una respuesta en RESULTADO (return) Luego con la
+	 * variable resultado veo quien se esta logeando y por donde tiene que ir
 	 * Perfil, Usuario, Error (+ de 3 errores exit)
 	 */
 	public void clickLogin() {
 		String user = login.getUser();
 		String contraseña = login.getContraseña();
-		miModelo.clickLogin(user, contraseña);
-		if (miModelo.resultado.equals(usuario)) {
+		String res = miModelo.clickLogin(user, contraseña);
+		if (res.equals(usuario)) {
 			mostrarPerfil();
-		} else if (miModelo.resultado.equals(admin)) {
+		} else if (res.equals(admin)) {
 			mostrarUsuarios();
+			miModelo.cargarTabla();
 		} else {
 			mostrarError();
 			if (miModelo.errores >= cantidadErrores) {
@@ -92,6 +98,7 @@ public class Controlador {
 		usuarios.setVisible(false);
 		error.setVisible(false);
 		registro.setVisible(true);
+		noConnection.setVisible(false);
 
 	}
 
@@ -101,6 +108,7 @@ public class Controlador {
 		usuarios.setVisible(false);
 		login.setVisible(false);
 		perfil.setVisible(false);
+		noConnection.setVisible(false);
 	}
 
 	public void mostrarPerfil() {
@@ -109,6 +117,7 @@ public class Controlador {
 		usuarios.setVisible(false);
 		error.setVisible(false);
 		registro.setVisible(false);
+		noConnection.setVisible(false);
 	}
 
 	public void mostrarLogin() {
@@ -117,6 +126,8 @@ public class Controlador {
 		error.setVisible(false);
 		perfil.setVisible(false);
 		registro.setVisible(false);
+		noConnection.setVisible(false);
+		configuracion.setVisible(false);
 	}
 
 	public void mostrarUsuarios() {
@@ -125,27 +136,32 @@ public class Controlador {
 		error.setVisible(false);
 		perfil.setVisible(false);
 		registro.setVisible(false);
+		noConnection.setVisible(false);
+	}
+	
+	public void mostrarConfiguracion() {
+		configuracion.setVisible(true);
+		usuarios.setVisible(false);
+		login.setVisible(false);
+		error.setVisible(false);
+		perfil.setVisible(false);
+		registro.setVisible(false);
+		noConnection.setVisible(false);
+		
 	}
 
 	/**
-	 * @param passwd
-	 * @param user  
-	 *  Compruebo si el usuario existe o no. LLam0 al metodo de miModelo que va a crear el nuevo usuario,
-	 *  le paso por parametro el user y la passwd Luego muestro el login y la etiqueta correspondiente
-	 *  
-	 */
-
-	/**
-	 * @param passwd 
-	 * Compruebo que las contraseñas ingresadas sean iguales. 
-	 * LLamo a miModelo para actualizar la contraseña le paso la nueva contraseña
-	 * Luego muestro el login y la etiqueta, los otros campos a null y etiquetas.
+	 * @param passwd Compruebo que las contraseñas ingresadas sean iguales. LLamo a
+	 *               miModelo para actualizar la contraseña le paso la nueva
+	 *               contraseña Luego muestro el login y la etiqueta, los otros
+	 *               campos a null y etiquetas.
 	 */
 	public void clickCambiar(JPasswordField txtRepiteContraseña, JPasswordField txtContraseña,
 			JLabel lblContraseñaDistinta) {
-		if (String.valueOf(txtContraseña.getPassword()).equals(String.valueOf(txtRepiteContraseña.getPassword()))) {
-			String passwd = String.valueOf(txtContraseña.getPassword());
-			miModelo.modificarContraseña(passwd);
+		String passwd1 = String.valueOf(txtContraseña.getPassword());
+		String passwd2 = String.valueOf(txtRepiteContraseña.getPassword());
+		if (passwd1.equals(passwd2)) {
+			miModelo.modificarContraseña(passwd1);
 			mostrarLogin();
 			login.mostrarEtiquetaContraseña();
 			txtRepiteContraseña.setText(null);
@@ -162,10 +178,10 @@ public class Controlador {
 	 * @param txtContraseña
 	 */
 
-	public void altaUsuario(DefaultTableModel modelo, JTextField txtUsuario, JTextField txtContraseña) {
+	public void altaUsuario(JTable tabla, DefaultTableModel modelo, JTextField txtUsuario, JTextField txtContraseña) {
 		String usr = txtUsuario.getText();
 		String passwd = txtContraseña.getText();
-		miModelo.añadirUsuario(usr,passwd);
+		miModelo.añadirUsuario(tabla, modelo, usr, passwd);
 		txtUsuario.setText(null);
 		txtContraseña.setText(null);
 	}
@@ -197,23 +213,127 @@ public class Controlador {
 	public void cambiarUsuario(JTable tabla, DefaultTableModel modelo, JTextField txtUsuario,
 			JTextField txtContraseña) {
 		int fila = tabla.getSelectedRow();
-		if(miModelo.cambioAdmin){
-			modelo.setValueAt(admin, fila, 0);
-			modelo.setValueAt(txtContraseña.getText(), fila, 1);
-			usuarios.cambioAdmin(true);
-			miModelo.cambiarUsuario(admin, txtContraseña.getText());
-		}else {
+		int res = 0;
+		if (cambioAdmin) {
+			if(!txtUsuario.getText().equals(admin)) { // Miro si esta intentando cambiarle el nombre al "admin"
+				usuarios.cambioAdmin(true);
+			}else {
+				usuarios.getLblCambiarAdmin().setVisible(false);
+				modelo.setValueAt(admin, fila, 0);
+				modelo.setValueAt(txtContraseña.getText(), fila, 1);
+				res = miModelo.cambiarUsuario(admin, txtContraseña.getText());	
+			}
+			
+		} else {
 			modelo.setValueAt(txtUsuario.getText(), fila, 0);
 			modelo.setValueAt(txtContraseña.getText(), fila, 1);
 			usuarios.cambioAdmin(false);
-			miModelo.cambiarUsuario(txtUsuario.getText(), txtContraseña.getText());	
+			res = miModelo.cambiarUsuario(txtUsuario.getText(), txtContraseña.getText());
+		}
+		
+		if(res>0) {
+			usuarios.getLblOk().setVisible(true);
+		}else {
+			usuarios.getLblNo().setVisible(true);
 		}
 		txtUsuario.setText(null);
 		txtContraseña.setText(null);
 	}
-}
+
 	/**
-	 * Completo los campos de texto con los datos seleccionados en la tabla, compruebo si el seleccionado es Admin.
-	 * */
+	 * Completo los campos de texto con los datos seleccionados en la tabla,
+	 * compruebo si el seleccionado es Admin.
+	 */
 
+	public void completarCampos(JTable tabla, DefaultTableModel modelo, JTextField txtUsuario,
+			JTextField txtContraseña) {
+		int fila = tabla.getSelectedRow();
+		String esAdmin = (String) modelo.getValueAt(fila, 0);
+		if (esAdmin.equals(admin)) {
+			cambioAdmin = true;
+		} else {
+			cambioAdmin = false;
+		}
+		String campoUser = (String) modelo.getValueAt(fila, 0);
+		String campoPasswd = (String) modelo.getValueAt(fila, 1);
+		txtUsuario.setText(campoUser);
+		txtContraseña.setText(campoPasswd);
+		miModelo.setUserViejo(campoUser); // Guardo los datos viejos para luego poder
+											// actualizarlos en la query Update Set
+		miModelo.setPasswdVieja(campoPasswd);
+	}
 
+	/**
+	 * @return the configuracion
+	 */
+	public VistaConfiguracion getConfiguracion() {
+		return configuracion;
+	}
+
+	/**
+	 * @param configuracion the configuracion to set
+	 */
+	public void setConfiguracion(VistaConfiguracion configuracion) {
+		this.configuracion = configuracion;
+	}
+
+	/**
+	 * 
+	 */
+	public void rellenarCampos() {
+		
+		miModelo.cargarCampos();
+		
+	}
+
+	/**
+	 * @return the errorFatal
+	 */
+	public VistaNoConnection getErrorFatal() {
+		return noConnection;
+	}
+
+	/**
+	 * @param errorFatal the errorFatal to set
+	 */
+	public void setErrorFatal(VistaNoConnection errorFatal) {
+		this.noConnection = errorFatal;
+	}
+
+	/**
+	 * 
+	 */
+	public void guardar() {
+		miModelo.guardar();
+		
+	}
+
+	/**
+	 * 
+	 */
+	public void mostrarNoConnection() {
+		noConnection.setVisible(true);
+		login.setVisible(false);
+		usuarios.setVisible(false);
+		error.setVisible(false);
+		perfil.setVisible(false);
+		registro.setVisible(false);
+	}
+	
+	public void noConexion() {
+		configuracion.getLblNoConnection().setVisible(true);
+	}
+
+	/**
+	 * 
+	 */
+	/*public void mostrarErrorFatal() {
+		VistaNoConnection noConnection =  new VistaNoConnection();
+		noConnection.setVisible(true);
+		login.setVisible(false);
+	}
+	*/
+
+	
+	
+}

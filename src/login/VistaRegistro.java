@@ -22,7 +22,7 @@ import java.awt.Color;
 /**
  * @author federicoruiz 10 may 2023 16:02:13
  */
-public class VistaRegistro extends JFrame {
+public class VistaRegistro extends JFrame implements Vistas{
 
 	private Controlador miControlador;
 	private Modelo miModelo;
@@ -40,6 +40,7 @@ public class VistaRegistro extends JFrame {
 	private JPasswordField txtContraseña;
 	private JLabel lblUserExiste;
 	private JLabel lblCampoVacio;
+
 	/**
 	 * Create the frame.
 	 */
@@ -86,10 +87,10 @@ public class VistaRegistro extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				String user = txtUsuario.getText();
 				String passwd = String.valueOf(txtContraseña.getPassword());
-				if(user.equals("") || passwd.equals("")) {
+				if (user.equals("") || passwd.equals("")) {
 					lblCampoVacio.setVisible(true);
-				}else {
-					miModelo.comprobarUsuario(user,passwd,lblUserExiste);
+				} else {
+					miModelo.comprobarUsuario(user, passwd, lblUserExiste);
 					txtUsuario.setText(null);
 					txtContraseña.setText(null);
 					lblCampoVacio.setVisible(false);
@@ -109,13 +110,13 @@ public class VistaRegistro extends JFrame {
 		});
 		txtContraseña.setBounds(175, 123, 130, 16);
 		getContentPane().add(txtContraseña);
-		
+
 		lblUserExiste = new JLabel("Ya existe un usuario con ese nombre");
 		lblUserExiste.setForeground(Color.RED);
 		lblUserExiste.setVisible(false);
 		lblUserExiste.setBounds(73, 169, 264, 16);
 		getContentPane().add(lblUserExiste);
-		
+
 		lblCampoVacio = new JLabel("Debe completar los dos campos");
 		lblCampoVacio.setVisible(false);
 		lblCampoVacio.setForeground(Color.RED);
@@ -123,15 +124,16 @@ public class VistaRegistro extends JFrame {
 		getContentPane().add(lblCampoVacio);
 	}
 
+	@Override
 	public void setControlador(Controlador miControlador) {
 		this.miControlador = miControlador;
+		
 	}
 
-	/**
-	 * @param miModelo the miModelo to set
-	 */
+	@Override
 	public void setModelo(Modelo miModelo) {
 		this.miModelo = miModelo;
+		
 	}
 
 	public void mostrarBtn() {
@@ -141,4 +143,6 @@ public class VistaRegistro extends JFrame {
 			btnNuevoUsuario.setEnabled(false);
 		}
 	}
+
+	
 }

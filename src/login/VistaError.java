@@ -18,7 +18,7 @@ import java.awt.event.ActionEvent;
 /**
  * @author federicoruiz 10 may 2023 15:59:57
  */
-public class VistaError extends JFrame {
+public class VistaError extends JFrame implements Vistas{
 
 	private JPanel contentPane;
 	private Controlador miControlador;
@@ -29,7 +29,6 @@ public class VistaError extends JFrame {
 	private VistaError error;
 	private VistaPerfil perfil;
 
-
 	private JLabel lblErrores;
 	private JButton btnVolver;
 	private JTextField txtErrores;
@@ -38,9 +37,10 @@ public class VistaError extends JFrame {
 	 * Create the frame.
 	 */
 	public VistaError() {
-		
+
 		setTitle("Error");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		// setDefaultCloseOperation(miControlador.cierre(error));
 		setBounds(100, 100, 450, 300);
 		getContentPane().setLayout(null);
 
@@ -65,19 +65,22 @@ public class VistaError extends JFrame {
 
 	}
 
-	public void setControlador(Controlador miControlador) {
-		this.miControlador = miControlador;
-	}
-
-	/**
-	 * @param miModelo the miModelo to set
-	 */
-	public void setModelo(Modelo miModelo) {
-		this.miModelo = miModelo;
-	}
+	
 
 	public void setError(int err) {
 		String num = Integer.toString(err);
 		txtErrores.setText(num);
+	}
+
+	@Override
+	public void setControlador(Controlador miControlador) {
+		this.miControlador = miControlador;
+		
+	}
+
+	@Override
+	public void setModelo(Modelo miModelo) {
+		this.miModelo = miModelo;
+		
 	}
 }
